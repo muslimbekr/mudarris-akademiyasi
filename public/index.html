@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mudarris Akademiyasi — Arab tilini 0 dan oʻrganing</title>
-<meta name="description" content="Mudarris Arab tili Akademiyasi — Toshkentdagi 8 ta filial, 10 000+ bitiruvchi. Fonetika, grammatika va bolalar uchun Jajji Akademik kurslari. Tajribali ustozlar bilan arab tilini noldan oʻrganing.">
+<title>Mudarris Akademiyasi — Arab tili oflayn kurslari Toshkentda</title>
+<meta name="description" content="Arab tilini Toshkentdagi 8 ta filialimizda ustoz bilan yuzma-yuz oʻrganing. Fonetika, grammatika va bolalar uchun guruhlar. 10 000+ bitiruvchi. Ariza qoldiring — qoʻngʻiroq qilamiz.">
 <meta name="theme-color" content="#2A5298">
 <link rel="icon" href="assets/logo.jpg">
 <link rel="apple-touch-icon" href="assets/logo.jpg">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Mudarris Akademiyasi — Arab tilini 0 dan oʻrganing">
-<meta property="og:description" content="Toshkentdagi 8 ta filial, 10 000+ bitiruvchi. Fonetika, grammatika va bolalar kurslari.">
+<meta property="og:title" content="Arab tili oflayn kurslari — Mudarris Akademiyasi">
+<meta property="og:description" content="Toshkentdagi 8 ta filialda jonli darslar. Ariza qoldiring — ustozlarimiz siz bilan bogʻlanadi.">
 <meta property="og:image" content="assets/logo.jpg">
 <meta property="og:locale" content="uz_UZ">
 <meta property="og:url" content="https://mudarris-akademiyasi-mu.vercel.app/">
@@ -20,6 +20,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+
+<!-- ⚠️ META PIXEL — almashtiring: 'PASTE_PIXEL_ID_HERE' oʻrniga haqiqiy Pixel ID yozing -->
+<script>window.META_PIXEL_ID = 'PASTE_PIXEL_ID_HERE';</script>
 </head>
 <body>
 
@@ -36,10 +39,9 @@
       <a href="#nega">Nega biz</a>
       <a href="#natijalar">Natijalar</a>
       <a href="#filiallar">Filiallar</a>
-      <a href="#aloqa">Aloqa</a>
     </nav>
     <div class="nav__act">
-      <a class="btn btn--sm" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">Kursga yozilish</a>
+      <a class="btn btn--sm js-to-form" href="#ariza">Ariza qoldirish</a>
       <button class="burger" id="burger" aria-label="Menyu" aria-expanded="false" aria-controls="menu">
         <span></span><span></span><span></span>
       </button>
@@ -67,22 +69,96 @@
   </div>
 
   <div class="wrap hero__in">
-    <p class="eyebrow reveal">Toshkentdagi arab tili akademiyasi</p>
-    <h1 class="hero__h1 reveal">Arab tilini <em>0 dan</em> oʻrganing</h1>
-    <p class="hero__sub reveal">Harflarni maxrajidan toʻgʻri chiqarishdan to erkin oʻqishgacha — 10 yilgacha tajribaga ega ustozlar, sinovdan oʻtgan dastur va 8 ta qulay filial.</p>
-    <div class="hero__cta reveal">
-      <a class="btn btn--lg" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M9.8 16.1 9.6 20c.4 0 .6-.2.8-.4l1.9-1.8 3.9 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.2-1-.4-1.4-1-1.2L3.4 10.2c-1 .4-1 .9-.2 1.2l4.3 1.3 9.9-6.2c.5-.3.9-.1.5.2l-8.1 7.4Z"/></svg>
-        Botdan yozilish
-      </a>
-      <a class="btn btn--ghost btn--lg" href="tel:+998781137353">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
-        78-113-73-53
-      </a>
+    <div class="hero__copy">
+      <p class="eyebrow reveal">Toshkentda oflayn arab tili kurslari</p>
+      <h1 class="hero__h1 reveal">Arab tilini <em>ustoz bilan</em> oʻrganing</h1>
+      <p class="hero__sub reveal">Onlayn video emas — Toshkentdagi <b>8 ta filialimizda</b> jonli, guruhli darslar. Harflarni maxrajidan toʻgʻri chiqarishdan to erkin oʻqishgacha, 10 yilgacha tajribaga ega ustozlar bilan.</p>
+      <ul class="hero__pts reveal">
+        <li>Ustoz bilan yuzma-yuz, sinfda</li>
+        <li>Uyingizga yaqin filialni tanlaysiz</li>
+        <li>Har bir daraja uchun alohida guruh</li>
+      </ul>
+      <div class="hero__cta reveal">
+        <a class="btn btn--lg js-to-form" href="#ariza">Bepul maslahat olish</a>
+        <a class="btn btn--ghost btn--lg js-call" href="tel:+998781137353">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+          78-113-73-53
+        </a>
+      </div>
     </div>
-    <ul class="hero__chips reveal">
-      <li>Fonetika</li><li>Grammatika</li><li>Bolalar uchun 4–7 yosh</li><li>Preschool</li>
-    </ul>
+
+    <!-- HERO FORM -->
+    <aside class="leadbox reveal" id="ariza">
+      <div class="leadbox__head">
+        <h2>Ariza qoldiring</h2>
+        <p>Ustozlarimiz siz bilan bogʻlanib, darajangizga mos guruhni tanlashda yordam beradi.</p>
+      </div>
+      <form class="lf" id="leadForm" novalidate>
+        <div class="lf__row">
+          <label class="lf__f">
+            <span>Ismingiz <i>*</i></span>
+            <input type="text" name="name" autocomplete="given-name" placeholder="Masalan: Nodira" required maxlength="80">
+            <em class="lf__err" data-for="name"></em>
+          </label>
+        </div>
+        <div class="lf__row">
+          <label class="lf__f">
+            <span>Telefon raqamingiz <i>*</i></span>
+            <input type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" required>
+            <em class="lf__err" data-for="phone"></em>
+          </label>
+        </div>
+        <div class="lf__row lf__row--2">
+          <label class="lf__f">
+            <span>Qaysi kurs?</span>
+            <select name="course">
+              <option value="">Tanlang</option>
+              <option>Fonetika</option>
+              <option>Grammatika</option>
+              <option>Jajji Akademik (4–7 yosh)</option>
+              <option>Preschool (Sergeli)</option>
+              <option>Bilmayman, maslahat kerak</option>
+            </select>
+          </label>
+          <label class="lf__f">
+            <span>Qaysi filial qulay?</span>
+            <select name="branch">
+              <option value="">Tanlang</option>
+              <option>Olmazor</option>
+              <option>Beruniy</option>
+              <option>Sergeli</option>
+              <option>Qiyot</option>
+              <option>Algoritm</option>
+              <option>Qoʻyliq</option>
+              <option>Yangi TashMI</option>
+              <option>Katta Qaʼni</option>
+              <option>Bilmayman, yaqinini tavsiya qiling</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- spam tuzogʻi: odam koʻrmaydi, bot toʻldiradi -->
+        <div class="lf__hp" aria-hidden="true">
+          <label>Saytingiz<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <button class="btn btn--lg btn--full" type="submit" id="leadSubmit">
+          <span class="lf__label">Ariza yuborish</span>
+          <span class="lf__spin" aria-hidden="true"></span>
+        </button>
+        <p class="lf__note">Raqamingiz faqat siz bilan bogʻlanish uchun ishlatiladi.</p>
+        <p class="lf__fail" id="leadFail" role="alert" hidden></p>
+      </form>
+
+      <div class="lf__ok" id="leadOk" hidden>
+        <div class="lf__okic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5.2 5.2L20 7"/></svg>
+        </div>
+        <h3>Arizangiz qabul qilindi</h3>
+        <p>Rahmat! Ustozlarimiz tez orada <b class="lf__okphone"></b> raqamiga qoʻngʻiroq qiladi.</p>
+        <a class="btn btn--ghost" href="tel:+998781137353">Oʻzingiz qoʻngʻiroq qilmoqchimisiz? 78-113-73-53</a>
+      </div>
+    </aside>
   </div>
 
   <div class="wrap">
@@ -100,8 +176,8 @@
   <div class="wrap">
     <header class="sec__head reveal">
       <p class="eyebrow eyebrow--dark">Yoʻnalishlar</p>
-      <h2>Sizga mos kursni tanlang</h2>
-      <p class="sec__lead">Har bir guruh aniq daraja uchun tuzilgan — noldan boshlaganlar ham, bilimini chuqurlashtirmoqchi boʻlganlar ham oʻz oʻrnini topadi.</p>
+      <h2>Sizga mos guruhni tanlang</h2>
+      <p class="sec__lead">Barcha darslar filiallarimizda, ustoz bilan yuzma-yuz oʻtiladi. Har bir guruh aniq daraja uchun tuzilgan.</p>
     </header>
 
     <div class="cards">
@@ -110,13 +186,13 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 8v8M16 8v8M4 10.5v3M20 10.5v3"/></svg>
         </div>
         <h3>Fonetika</h3>
-        <p>Arab harflarini maxrajidan toʻgʻri chiqarish, talaffuz va ravon oʻqish. Oʻzingiz oʻrganib koʻrgan, lekin natija boʻlmagan boʻlsa — aynan shu kurs.</p>
+        <p>Arab harflarini maxrajidan toʻgʻri chiqarish, talaffuz va ravon oʻqish. Ustoz har bir oʻquvchining talaffuzini darsda joyida tuzatadi.</p>
         <ul class="card__list">
           <li>Alifbo va harf maxrajlari</li>
           <li>Individual talaffuz tuzatish</li>
           <li>Ravon oʻqish amaliyoti</li>
         </ul>
-        <a class="card__cta" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">Batafsil <span>→</span></a>
+        <a class="card__cta js-to-form" href="#ariza" data-course="Fonetika">Ariza qoldirish <span>→</span></a>
       </article>
 
       <article class="card reveal">
@@ -130,7 +206,7 @@
           <li>Sarf — soʻz shakllari</li>
           <li>Matn tahlili va mashqlar</li>
         </ul>
-        <a class="card__cta" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">Batafsil <span>→</span></a>
+        <a class="card__cta js-to-form" href="#ariza" data-course="Grammatika">Ariza qoldirish <span>→</span></a>
       </article>
 
       <article class="card reveal">
@@ -144,7 +220,7 @@
           <li>Harflarni tanish va oʻqish</li>
           <li>Darslarda odob-axloq tarbiyasi</li>
         </ul>
-        <a class="card__cta" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">Batafsil <span>→</span></a>
+        <a class="card__cta js-to-form" href="#ariza" data-course="Jajji Akademik (4–7 yosh)">Ariza qoldirish <span>→</span></a>
       </article>
 
       <article class="card reveal">
@@ -158,7 +234,7 @@
           <li>Kun boʻyi tartibli dastur</li>
           <li>Alohida qabul: 55-512-99-00</li>
         </ul>
-        <a class="card__cta" href="tel:+998555129900">Qoʻngʻiroq qilish <span>→</span></a>
+        <a class="card__cta js-to-form" href="#ariza" data-course="Preschool (Sergeli)" data-branch="Sergeli">Ariza qoldirish <span>→</span></a>
       </article>
     </div>
   </div>
@@ -174,12 +250,12 @@
     </header>
 
     <div class="feats">
-      <div class="feat reveal"><span class="feat__n">01</span><h3>Tajribali ustozlar</h3><p>Grammatika va fonetika darslarini tajribasi 10 yilgacha boʻlgan, sabrli yondashuvi bilan tanilgan ustozlar olib boradi.</p></div>
-      <div class="feat reveal"><span class="feat__n">02</span><h3>Toʻgʻri dastur</h3><p>Harfdan matngacha bosqichma-bosqich. Har bir dars oldingisining ustiga quriladi — boʻshliq qolmaydi.</p></div>
-      <div class="feat reveal"><span class="feat__n">03</span><h3>8 ta filial</h3><p>Toshkentning asosiy metro bekatlari yonida. Uyingizga yoki ishingizga eng yaqin filialni tanlaysiz.</p></div>
-      <div class="feat reveal"><span class="feat__n">04</span><h3>Har yosh uchun</h3><p>4 yoshli bolakaydan 67 yoshli oʻquvchigacha — guruhlar yosh va darajaga qarab shakllantiriladi.</p></div>
-      <div class="feat reveal"><span class="feat__n">05</span><h3>Jonli amaliyot</h3><p>Nazariya bilan cheklanmaymiz: har darsda oʻqish, talaffuz va soʻzlashuv mashqlari bor.</p></div>
-      <div class="feat reveal"><span class="feat__n">06</span><h3>Kuchli jamoa</h3><p>207 mingdan ortiq obunachi va minglab oʻquvchi — oʻrganish davom etadigan jonli muhit.</p></div>
+      <div class="feat reveal"><span class="feat__n">01</span><h3>Jonli, oflayn darslar</h3><p>Video kurs emas: siz sinfga kelasiz, ustoz talaffuzingizni eshitadi va xatoni oʻsha yerda tuzatadi. Arab tilida bu eng muhim farq.</p></div>
+      <div class="feat reveal"><span class="feat__n">02</span><h3>Tajribali ustozlar</h3><p>Grammatika va fonetika darslarini tajribasi 10 yilgacha boʻlgan, sabrli yondashuvi bilan tanilgan ustozlar olib boradi.</p></div>
+      <div class="feat reveal"><span class="feat__n">03</span><h3>Toʻgʻri dastur</h3><p>Harfdan matngacha bosqichma-bosqich. Har bir dars oldingisining ustiga quriladi — boʻshliq qolmaydi.</p></div>
+      <div class="feat reveal"><span class="feat__n">04</span><h3>8 ta filial</h3><p>Toshkentning asosiy metro bekatlari yonida. Uyingizga yoki ishingizga eng yaqin filialni tanlaysiz.</p></div>
+      <div class="feat reveal"><span class="feat__n">05</span><h3>Har yosh uchun</h3><p>4 yoshli bolakaydan 67 yoshli oʻquvchigacha — guruhlar yosh va darajaga qarab shakllantiriladi.</p></div>
+      <div class="feat reveal"><span class="feat__n">06</span><h3>Guruhdagi muhit</h3><p>Sinfdoshlar bilan birga oʻqish intizom beradi. Yolgʻiz oʻrganishda yoʻqoladigan izchillik guruhda saqlanadi.</p></div>
     </div>
   </div>
 </section>
@@ -216,24 +292,24 @@
     <header class="sec__head reveal">
       <p class="eyebrow eyebrow--dark">Manzillar</p>
       <h2>Toshkent boʻylab 8 ta filial</h2>
-      <p class="sec__lead">Barcha filiallarga yagona raqam orqali yoziladi: <a href="tel:+998781137353">78-113-73-53</a></p>
+      <p class="sec__lead">Darslar shu filiallarda oʻtiladi. Sizga qulayini tanlang — ariza qoldirsangiz, aniq manzil va dars jadvalini aytamiz.</p>
     </header>
 
     <div class="branches">
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Mirzo%20Gʻolib%20koʻchasi%2040A%20Toshkent" target="_blank" rel="noopener"><b>Olmazor</b><span>Mirzo Gʻolib koʻchasi, 40A</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Beruniy%20metro%20bekati%20Toshkent" target="_blank" rel="noopener"><b>Beruniy</b><span>Beruniy metro bekati</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Sergeli%20metro%20Toshkent" target="_blank" rel="noopener"><b>Sergeli</b><span>4-metro bekati</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Qiyot%20metro%20bekati%20Toshkent" target="_blank" rel="noopener"><b>Qiyot</b><span>Qoʻyliq, Qiyot metro bekati</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Algoritm%20Toshkent" target="_blank" rel="noopener"><b>Algoritm</b><span>Axmad Oltin Joʻja</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Qoʻyliq%20Fargʻona%20yoʻli%20Toshkent" target="_blank" rel="noopener"><b>Qoʻyliq</b><span>Fargʻona yoʻli</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Yangi%20TashMI%20Toshkent" target="_blank" rel="noopener"><b>Yangi TashMI</b><span>Toshkent tibbiyot akademiyasi yonida</span></a>
-      <a class="branch reveal" href="https://yandex.uz/maps/?text=Katta%20Qaʼni%20Toshkent" target="_blank" rel="noopener"><b>Katta Qaʼni</b><span>Katta Qaʼni mahallasi</span></a>
+      <button class="branch reveal js-branch" type="button" data-branch="Olmazor"><b>Olmazor</b><span>Mirzo Gʻolib koʻchasi, 40A</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Beruniy"><b>Beruniy</b><span>Beruniy metro bekati</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Sergeli"><b>Sergeli</b><span>4-metro bekati</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Qiyot"><b>Qiyot</b><span>Qoʻyliq, Qiyot metro bekati</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Algoritm"><b>Algoritm</b><span>Axmad Oltin Joʻja</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Qoʻyliq"><b>Qoʻyliq</b><span>Fargʻona yoʻli</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Yangi TashMI"><b>Yangi TashMI</b><span>Yangi TashMI hududi</span></button>
+      <button class="branch reveal js-branch" type="button" data-branch="Katta Qaʼni"><b>Katta Qaʼni</b><span>Katta Qaʼni mahallasi</span></button>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section class="cta" id="aloqa">
+<section class="cta">
   <div class="cta__bg" aria-hidden="true">
     <svg width="100%" height="100%">
       <defs>
@@ -247,12 +323,12 @@
   </div>
   <div class="wrap cta__in reveal">
     <h2>Arab tilini oʻrganishni ortga surmang</h2>
-    <p>Bugun yoziling — keyingi guruh boshlanishida siz ham safda boʻling. Savollaringizga darrov javob beramiz.</p>
+    <p>Ariza qoldiring — sizga eng yaqin filialni, mos guruhni va dars jadvalini aytib beramiz.</p>
     <div class="cta__btns">
-      <a class="btn btn--lg btn--white" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">Kursga yozilish</a>
-      <a class="btn btn--lg btn--outline" href="tel:+998781137353">78-113-73-53</a>
+      <a class="btn btn--lg btn--white js-to-form" href="#ariza">Ariza qoldirish</a>
+      <a class="btn btn--lg btn--outline js-call" href="tel:+998781137353">78-113-73-53</a>
     </div>
-    <p class="cta__note">Maktabgacha tayyorlov (Preschool, Sergeli): <a href="tel:+998555129900">55-512-99-00</a></p>
+    <p class="cta__note">Maktabgacha tayyorlov (Preschool, Sergeli): <a class="js-call" href="tel:+998555129900">55-512-99-00</a></p>
   </div>
 </section>
 
@@ -265,7 +341,7 @@
         <img src="assets/logo.jpg" alt="" width="44" height="44">
         <span class="brand__txt"><b>MUDARRIS</b><i>Akademiyasi</i></span>
       </a>
-      <p>Mudarris Arab tili Akademiyasi — arab tilini noldan, toʻgʻri dastur asosida oʻrgatadigan taʼlim markazi.</p>
+      <p>Mudarris Arab tili Akademiyasi — arab tilini noldan, toʻgʻri dastur asosida oʻrgatadigan oflayn taʼlim markazi.</p>
     </div>
 
     <div class="foot__col">
@@ -281,28 +357,27 @@
       <a href="#nega">Nega biz</a>
       <a href="#natijalar">Natijalar</a>
       <a href="#filiallar">Filiallar</a>
-      <a href="#aloqa">Aloqa</a>
+      <a class="js-to-form" href="#ariza">Ariza qoldirish</a>
     </div>
 
     <div class="foot__col">
       <h4>Bogʻlanish</h4>
-      <a href="tel:+998781137353">78-113-73-53</a>
-      <a href="tel:+998555129900">55-512-99-00</a>
+      <a class="js-call" href="tel:+998781137353">78-113-73-53</a>
+      <a class="js-call" href="tel:+998555129900">55-512-99-00</a>
       <div class="socials">
         <a href="https://www.instagram.com/mudarris_akademiyasi/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
-        <a href="https://t.me/mudarris_akademiyasi" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.8 16.1 9.6 20c.4 0 .6-.2.8-.4l1.9-1.8 3.9 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.2-1-.4-1.4-1-1.2L3.4 10.2c-1 .4-1 .9-.2 1.2l4.3 1.3 9.9-6.2c.5-.3.9-.1.5.2l-8.1 7.4Z"/></svg></a>
-        <a href="https://t.me/mudarriskids" target="_blank" rel="noopener" aria-label="Mudarris Kids">Kids</a>
+        <a href="https://t.me/mudarris_akademiyasi" target="_blank" rel="noopener" aria-label="Telegram kanal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.8 16.1 9.6 20c.4 0 .6-.2.8-.4l1.9-1.8 3.9 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.2-1-.4-1.4-1-1.2L3.4 10.2c-1 .4-1 .9-.2 1.2l4.3 1.3 9.9-6.2c.5-.3.9-.1.5.2l-8.1 7.4Z"/></svg></a>
       </div>
     </div>
   </div>
   <div class="wrap foot__bot">
     <span>© <span id="yr">2026</span> Mudarris Akademiyasi. Barcha huquqlar himoyalangan.</span>
-    <a href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener">@Mudarrisakademiyasi_bot</a>
+    <span>Toshkent, Oʻzbekiston</span>
   </div>
 </footer>
 
-<a class="fab" href="https://t.me/Mudarrisakademiyasi_bot" target="_blank" rel="noopener" aria-label="Telegram orqali yozilish">
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M9.8 16.1 9.6 20c.4 0 .6-.2.8-.4l1.9-1.8 3.9 2.9c.7.4 1.2.2 1.4-.7l2.6-12.1c.2-1-.4-1.4-1-1.2L3.4 10.2c-1 .4-1 .9-.2 1.2l4.3 1.3 9.9-6.2c.5-.3.9-.1.5.2l-8.1 7.4Z"/></svg>
+<a class="fab js-call" href="tel:+998781137353" aria-label="Qoʻngʻiroq qilish">
+  <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
 </a>
 
 <script src="script.js"></script>
