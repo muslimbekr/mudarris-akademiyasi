@@ -4,7 +4,7 @@ Lead-generation landing page for **Mudarris Arab tili Akademiyasi** (Tashkent), 
 destination for Meta (Facebook/Instagram) ad traffic. The academy teaches Arabic **offline**, in
 person, across 8 branches in Tashkent — the page is written around that.
 
-Form submissions go straight into **amoCRM**.
+Form submissions go straight into **Bitrix24 CRM**.
 
 Content and branding sourced from the academy's public
 [Telegram channel](https://t.me/s/mudarris_akademiyasi) and
@@ -15,8 +15,8 @@ Content and branding sourced from the academy's public
 - `public/index.html` — the page (Uzbek, Latin script)
 - `public/styles.css` — styles; brand blue `#2A5298` taken from the academy logo
 - `public/script.js` — form handling, Meta Pixel, validation, phone mask, UTM capture
-- `api/lead.js` — serverless function; creates the contact + lead in amoCRM
-- `scripts/amocrm-inspect.mjs` — prints the amoCRM ids you need for configuration
+- `api/lead.js` — serverless function; creates the CRM lead in Bitrix24
+- `scripts/bitrix-inspect.mjs` — checks the webhook and prints the ids you need
 - `public/assets/logo.jpg` — academy logo
 
 No build step and no dependencies. Static files plus one serverless function on Vercel.
@@ -25,57 +25,55 @@ No build step and no dependencies. Static files plus one serverless function on 
 
 ## ⚠️ Setup required before running ads
 
-### 1. amoCRM
+### 1. Bitrix24
 
-**a. Create a private integration.** In amoCRM: **Settings → Integrations → Create integration →
-Private**. Grant it access to leads and contacts. Open it and copy the **long-lived token**
-(долгосрочный токен).
+**a. Create an inbound webhook.** In Bitrix24: **Developer resources → Other → Inbound webhook**.
+Tick the **CRM** scope. Copy the URL — it looks like
+`https://company.bitrix24.ru/rest/1/xxxxxxxxxxxx/`.
 
-**b. Find your ids.** Run this locally — the token stays on your machine:
+That URL *is* the credential. Treat it like a password: it goes in Vercel's environment
+variables, never in the repo.
+
+**b. Check it and find your ids.** Run this locally — the webhook stays on your machine:
 
 ```bash
-AMOCRM_SUBDOMAIN=yoursubdomain AMOCRM_ACCESS_TOKEN=yourtoken node scripts/amocrm-inspect.mjs
+BITRIX_WEBHOOK_URL=https://company.bitrix24.ru/rest/1/xxxx/ node scripts/bitrix-inspect.mjs
 ```
 
-It prints your pipelines, stage ids, lead custom fields and users, each labelled with the env var
-it belongs to.
+It confirms the webhook has CRM access, prints which portal it belongs to, says whether your
+account uses Leads or runs CRM in simple mode, and lists custom fields, sources and users.
 
 **c. Set the environment variables** in Vercel → the project → **Settings → Environment Variables**:
 
 | Name | Required | Value |
 |---|---|---|
-| `AMOCRM_SUBDOMAIN` | yes | `mudarris` for `mudarris.amocrm.ru`. Pass the full host (`mudarris.kommo.com`) if you are on Kommo. |
-| `AMOCRM_ACCESS_TOKEN` | yes | the long-lived token |
-| `AMOCRM_PIPELINE_ID` | no | which funnel. Defaults to the main one. |
-| `AMOCRM_STATUS_ID` | no | which stage. Defaults to the first. |
-| `AMOCRM_RESPONSIBLE_USER_ID` | no | who the lead is assigned to |
-| `AMOCRM_CF_COURSE` etc. | no | lead custom field ids — see below |
+| `BITRIX_WEBHOOK_URL` | yes | the inbound webhook URL |
+| `BITRIX_ENTITY` | no | `lead` (default), or `deal` if CRM runs in simple mode |
+| `BITRIX_ASSIGNED_BY_ID` | no | user id the lead is assigned to |
+| `BITRIX_CATEGORY_ID` | no | deal pipeline id (only with `BITRIX_ENTITY=deal`) |
+| `BITRIX_SOURCE_ID` | no | CRM source, default `WEB` |
+| `BITRIX_UF_COURSE` / `BITRIX_UF_BRANCH` | no | custom field codes, e.g. `UF_CRM_1700000000000` |
 
 Redeploy after adding them.
 
-### What a lead looks like in amoCRM
+### What a lead looks like in Bitrix24
 
-- **Lead name:** `Sayt: Nodira — Grammatika`
-- **Contact:** created with the phone in `+998…` form, or reused if that phone already exists —
-  repeat submissions do not create duplicate contacts
-- **Tags:** `Sayt`, the utm_source, the course, the branch
-- **Note:** every field including all UTM params, `fbclid` and referrer
+- **Title:** `Sayt: Nodira — Grammatika`
+- **Phone:** stored as `+998…`, type MOBILE
+- **UTM:** written to Bitrix's native `UTM_SOURCE`, `UTM_MEDIUM`, `UTM_CAMPAIGN` and
+  `UTM_CONTENT` fields, so you can filter and build reports on campaigns without any setup
+- **Comments:** course, branch, `fbclid`, referrer and the submission time in Tashkent time
+- **Repeat enquiries** are flagged in the comments with the ids of the existing records, so
+  whoever picks the card up knows before they call
 
-Custom fields are optional on purpose: everything is in the note regardless, so the integration
-works the moment the token is set. Map `AMOCRM_CF_COURSE`, `AMOCRM_CF_BRANCH`,
-`AMOCRM_CF_UTM_SOURCE`, `AMOCRM_CF_UTM_CAMPAIGN` and `AMOCRM_CF_FBCLID` later if you want to
-filter and build reports on those values.
+Course and branch also go to `BITRIX_UF_COURSE` / `BITRIX_UF_BRANCH` when those are mapped.
+They are optional on purpose — everything is in the comments regardless, so the integration
+works the moment the webhook is set.
 
-### 2. Meta Pixel ID
+### 2. Meta Pixel — already configured
 
-Open `public/index.html` and replace the placeholder near the top:
-
-```html
-<script>window.META_PIXEL_ID = 'PASTE_PIXEL_ID_HERE';</script>
-```
-
-Until a real 15–16 digit ID is in place, no tracking fires (the page still works, and a warning
-is logged to the browser console).
+Pixel `1038630499223454` is live. The loader lives in `public/script.js`; the id is set in
+`public/index.html`, alongside a `<noscript>` beacon for visitors with JavaScript disabled.
 
 | Event | Fires when |
 |---|---|
@@ -83,16 +81,18 @@ is logged to the browser console).
 | `Lead` | form submits successfully — includes course + branch |
 | `Contact` | a phone number is clicked |
 
-Optimize the campaign for **Lead**.
+Optimize the campaign for **Lead**. Note that `Lead` only fires on a successful write to the
+CRM, so it stays silent until `BITRIX_WEBHOOK_URL` is set.
 
 ---
 
 ## Reliability
 
-- If amoCRM is unreachable, the lead is written to the Vercel function logs
+- If Bitrix is unreachable, the lead is written to the Vercel function logs
   (`LEAD_WRITE_FAILED`) and the visitor is asked to call instead — a failure is never silent.
-- If the lead is created but the note fails, the request still succeeds; the lead is already safe
-  in the CRM.
+- Bitrix answers `HTTP 200` with an `{error}` body when a call fails, so the response body is
+  checked rather than the status code — a rejected lead can never look like a success.
+- If the duplicate lookup fails, the lead is still created; only the repeat-enquiry note is lost.
 - Until the env vars are set, `/api/lead` returns `500 not_configured`.
 
 ## Spam handling

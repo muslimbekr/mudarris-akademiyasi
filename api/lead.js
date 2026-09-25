@@ -1,54 +1,57 @@
 /*
- * Landing page lead -> amoCRM.
+ * Landing page lead -> Bitrix24.
  *
- * Flow: look the contact up by phone, then either attach a new lead to the existing
- * contact or create contact + lead together. Looking up first keeps the CRM from
- * filling with duplicate contacts when the same person submits twice.
+ * Talks to an inbound webhook, so the whole credential is one URL and there is no
+ * OAuth refresh to keep alive. Creates a CRM Lead by default; accounts running CRM in
+ * simple mode (no Leads section) can set BITRIX_ENTITY=deal instead.
  */
 
-const RAW_SUBDOMAIN = (process.env.AMOCRM_SUBDOMAIN || '').trim();
-const TOKEN = (process.env.AMOCRM_ACCESS_TOKEN || '').trim();
-const PIPELINE_ID = process.env.AMOCRM_PIPELINE_ID;
-const STATUS_ID = process.env.AMOCRM_STATUS_ID;
-const RESPONSIBLE_USER_ID = process.env.AMOCRM_RESPONSIBLE_USER_ID;
+const WEBHOOK = (process.env.BITRIX_WEBHOOK_URL || '').trim().replace(/\/+$/, '');
+const ENTITY = (process.env.BITRIX_ENTITY || 'lead').trim().toLowerCase() === 'deal' ? 'deal' : 'lead';
+const ASSIGNED_BY_ID = process.env.BITRIX_ASSIGNED_BY_ID;
+const CATEGORY_ID = process.env.BITRIX_CATEGORY_ID;   // deal pipeline
+const SOURCE_ID = (process.env.BITRIX_SOURCE_ID || 'WEB').trim();
 
-/* Optional lead custom fields. Run scripts/amocrm-inspect.mjs to find the ids.
-   Anything left unset still reaches the CRM in the note. */
-const CF = {
-  course: process.env.AMOCRM_CF_COURSE,
-  branch: process.env.AMOCRM_CF_BRANCH,
-  utm_source: process.env.AMOCRM_CF_UTM_SOURCE,
-  utm_campaign: process.env.AMOCRM_CF_UTM_CAMPAIGN,
-  fbclid: process.env.AMOCRM_CF_FBCLID
+/* Optional custom fields, e.g. UF_CRM_1700000000000.
+   Run scripts/bitrix-inspect.mjs to list them. Anything unset still reaches
+   the CRM in the comment block, so this is a refinement, not a requirement. */
+const UF = {
+  course: (process.env.BITRIX_UF_COURSE || '').trim(),
+  branch: (process.env.BITRIX_UF_BRANCH || '').trim()
 };
-
-/* Accept either "mudarris" or a full host like "mudarris.kommo.com". */
-const HOST = RAW_SUBDOMAIN.includes('.') ? RAW_SUBDOMAIN : `${RAW_SUBDOMAIN}.amocrm.ru`;
-const API = `https://${HOST}/api/v4`;
 
 const CONTROL_CHARS = /[\p{Cc}]/gu;
 const clean = (v, max = 200) => String(v ?? '').replace(CONTROL_CHARS, '').trim().slice(0, max);
 
-async function amo(path, { method = 'GET', body } = {}) {
-  const res = await fetch(`${API}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: body ? JSON.stringify(body) : undefined
+/* Bitrix answers 200 with an {error} body on failure, so the status code alone is not enough. */
+async function bx(method, payload) {
+  const res = await fetch(`${WEBHOOK}/${method}.json`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
-
-  /* amoCRM answers 204 with an empty body when a search finds nothing. */
-  if (res.status === 204) return null;
   const text = await res.text();
-  if (!res.ok) throw new Error(`amoCRM ${method} ${path} -> ${res.status}: ${text.slice(0, 500)}`);
-  return text ? JSON.parse(text) : null;
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`Bitrix ${method} -> ${res.status}: ${text.slice(0, 300)}`);
+  }
+  if (data.error) throw new Error(`Bitrix ${method} -> ${data.error}: ${data.error_description || ''}`);
+  if (!res.ok) throw new Error(`Bitrix ${method} -> ${res.status}: ${text.slice(0, 300)}`);
+  return data.result;
 }
 
-async function findContactIdByPhone(digits) {
-  const found = await amo(`/contacts?query=${encodeURIComponent(digits)}&limit=1`);
-  return found?._embedded?.contacts?.[0]?.id ?? null;
+/* Bitrix has its own duplicate control in the UI; this only annotates the card so
+   whoever picks it up knows they are looking at a repeat enquiry. */
+async function findDuplicate(e164) {
+  const found = await bx('crm.duplicate.findbycomm', {
+    type: 'PHONE',
+    values: [e164],
+    entity_type: ENTITY === 'deal' ? 'CONTACT' : 'LEAD'
+  });
+  const ids = found?.LEAD || found?.CONTACT || [];
+  return Array.isArray(ids) && ids.length ? ids : null;
 }
 
 export default async function handler(req, res) {
@@ -78,103 +81,66 @@ export default async function handler(req, res) {
 
   const course = clean(body.course, 60);
   const branch = clean(body.branch, 60);
-  const utm = {
-    source: clean(body.utm_source, 60),
-    medium: clean(body.utm_medium, 60),
-    campaign: clean(body.utm_campaign, 120),
-    content: clean(body.utm_content, 120)
-  };
+  const utmSource = clean(body.utm_source, 60);
+  const utmMedium = clean(body.utm_medium, 60);
+  const utmCampaign = clean(body.utm_campaign, 120);
+  const utmContent = clean(body.utm_content, 120);
   const fbclid = clean(body.fbclid, 255);
   const referrer = clean(body.referrer, 255);
   const e164 = `+${digits}`;
 
-  if (!RAW_SUBDOMAIN || !TOKEN) {
-    console.error('amoCRM env vars missing (AMOCRM_SUBDOMAIN / AMOCRM_ACCESS_TOKEN)');
+  if (!WEBHOOK) {
+    console.error('BITRIX_WEBHOOK_URL is not set');
     return res.status(500).json({ error: 'not_configured' });
   }
 
-  /* Everything we know, in one readable block. Written as a note so no field is lost
-     even when the optional custom fields are not configured. */
-  const noteText = [
-    'Saytdan yangi ariza',
-    `Ism: ${name}`,
-    `Telefon: ${e164}`,
-    `Kurs: ${course || '—'}`,
-    `Filial: ${branch || '—'}`,
-    '',
-    `utm_source: ${utm.source || '—'}`,
-    `utm_medium: ${utm.medium || '—'}`,
-    `utm_campaign: ${utm.campaign || '—'}`,
-    `utm_content: ${utm.content || '—'}`,
-    `fbclid: ${fbclid || '—'}`,
-    `Referrer: ${referrer || '—'}`,
-    `Vaqt: ${new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}`
-  ].join('\n');
-
-  const customFields = Object.entries({
-    course,
-    branch,
-    utm_source: utm.source,
-    utm_campaign: utm.campaign,
-    fbclid
-  })
-    .filter(([key, value]) => CF[key] && value)
-    .map(([key, value]) => ({ field_id: Number(CF[key]), values: [{ value }] }));
-
-  const tags = [{ name: 'Sayt' }];
-  if (utm.source) tags.push({ name: utm.source });
-  if (course) tags.push({ name: course });
-  if (branch) tags.push({ name: branch });
-
-  const leadBase = {
-    name: `Sayt: ${name}${course ? ` — ${course}` : ''}`,
-    ...(PIPELINE_ID ? { pipeline_id: Number(PIPELINE_ID) } : {}),
-    ...(STATUS_ID ? { status_id: Number(STATUS_ID) } : {}),
-    ...(RESPONSIBLE_USER_ID ? { responsible_user_id: Number(RESPONSIBLE_USER_ID) } : {}),
-    ...(customFields.length ? { custom_fields_values: customFields } : {})
-  };
-
   try {
-    let leadId;
-    const existingContactId = await findContactIdByPhone(digits);
-
-    if (existingContactId) {
-      const created = await amo('/leads', {
-        method: 'POST',
-        body: [{ ...leadBase, _embedded: { contacts: [{ id: existingContactId }], tags } }]
-      });
-      leadId = created?._embedded?.leads?.[0]?.id;
-    } else {
-      const created = await amo('/leads/complex', {
-        method: 'POST',
-        body: [{
-          ...leadBase,
-          _embedded: {
-            contacts: [{
-              first_name: name,
-              custom_fields_values: [
-                { field_code: 'PHONE', values: [{ value: e164, enum_code: 'MOB' }] }
-              ]
-            }],
-            tags
-          }
-        }]
-      });
-      leadId = Array.isArray(created) ? created[0]?.id : created?._embedded?.leads?.[0]?.id;
+    let duplicateOf = null;
+    /* Never let the duplicate lookup block the lead itself. */
+    try {
+      duplicateOf = await findDuplicate(e164);
+    } catch (err) {
+      console.warn('DUPLICATE_CHECK_SKIPPED', err.message);
     }
 
-    if (leadId) {
-      /* A failed note must not fail the request — the lead itself is already safe in the CRM. */
-      await amo(`/leads/${leadId}/notes`, {
-        method: 'POST',
-        body: [{ note_type: 'common', params: { text: noteText } }]
-      }).catch((err) => console.error('NOTE_FAILED', leadId, err.message));
-    }
+    const comments = [
+      'Saytdan yangi ariza',
+      `Kurs: ${course || '—'}`,
+      `Filial: ${branch || '—'}`,
+      `fbclid: ${fbclid || '—'}`,
+      `Referrer: ${referrer || '—'}`,
+      `Vaqt: ${new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}`,
+      duplicateOf ? `\n⚠️ Bu raqam bazada bor: ${duplicateOf.join(', ')}` : ''
+    ].filter(Boolean).join('\n');
 
-    return res.status(200).json({ ok: true });
+    const fields = {
+      TITLE: `Sayt: ${name}${course ? ` — ${course}` : ''}`,
+      NAME: name,
+      PHONE: [{ VALUE: e164, VALUE_TYPE: 'MOBILE' }],
+      SOURCE_ID,
+      SOURCE_DESCRIPTION: [utmSource, utmCampaign].filter(Boolean).join(' / ') || 'Landing',
+      COMMENTS: comments,
+      OPENED: 'Y',
+      /* Bitrix stores UTM natively, so these are real filterable fields, not free text. */
+      UTM_SOURCE: utmSource,
+      UTM_MEDIUM: utmMedium,
+      UTM_CAMPAIGN: utmCampaign,
+      UTM_CONTENT: utmContent,
+      ...(ASSIGNED_BY_ID ? { ASSIGNED_BY_ID: Number(ASSIGNED_BY_ID) } : {}),
+      ...(ENTITY === 'deal' && CATEGORY_ID ? { CATEGORY_ID: Number(CATEGORY_ID) } : {}),
+      ...(UF.course && course ? { [UF.course]: course } : {}),
+      ...(UF.branch && branch ? { [UF.branch]: branch } : {})
+    };
+
+    /* REGISTER_SONET_EVENT posts it to the activity stream so the team is notified. */
+    const id = await bx(`crm.${ENTITY}.add`, { fields, params: { REGISTER_SONET_EVENT: 'Y' } });
+
+    return res.status(200).json({ ok: true, id });
   } catch (err) {
-    /* The lead still lands in the function logs if amoCRM is unreachable, so nothing is lost. */
-    console.error('LEAD_WRITE_FAILED', JSON.stringify({ name, phone: e164, course, branch, ...utm, fbclid }), err.message);
+    /* The lead still lands in the function logs if Bitrix is unreachable, so nothing is lost. */
+    console.error('LEAD_WRITE_FAILED', JSON.stringify({
+      name, phone: e164, course, branch, utmSource, utmMedium, utmCampaign, utmContent, fbclid
+    }), err.message);
     return res.status(502).json({ error: 'write_failed' });
   }
 }
