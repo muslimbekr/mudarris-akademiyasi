@@ -17,8 +17,16 @@ const SOURCE_ID = (process.env.BITRIX_SOURCE_ID || 'WEB').trim();
    the CRM in the comment block, so this is a refinement, not a requirement. */
 const UF = {
   course: (process.env.BITRIX_UF_COURSE || '').trim(),
-  branch: (process.env.BITRIX_UF_BRANCH || '').trim()
+  branch: (process.env.BITRIX_UF_BRANCH || '').trim(),
+  project: (process.env.BITRIX_UF_PROJECT || '').trim()
 };
+const UF_PROJECT_VALUE = (process.env.BITRIX_UF_PROJECT_VALUE || '').trim();
+
+/* These fields are enumerations in Bitrix: they take an option id, not text. The page
+   sends the id it rendered; anything not on this list is dropped rather than guessed,
+   so a stale option can never write a wrong value into the CRM. */
+const COURSE_IDS = new Set(['285', '287', '289', '291', '293', '295', '613']);
+const BRANCH_IDS = new Set(['165', '167', '169', '171', '173', '837', '849', '1475', '1477']);
 
 const CONTROL_CHARS = /[\p{Cc}]/gu;
 const clean = (v, max = 200) => String(v ?? '').replace(CONTROL_CHARS, '').trim().slice(0, max);
@@ -81,6 +89,8 @@ export default async function handler(req, res) {
 
   const course = clean(body.course, 60);
   const branch = clean(body.branch, 60);
+  const courseId = COURSE_IDS.has(clean(body.courseId, 10)) ? clean(body.courseId, 10) : '';
+  const branchId = BRANCH_IDS.has(clean(body.branchId, 10)) ? clean(body.branchId, 10) : '';
   const utmSource = clean(body.utm_source, 60);
   const utmMedium = clean(body.utm_medium, 60);
   const utmCampaign = clean(body.utm_campaign, 120);
@@ -128,8 +138,9 @@ export default async function handler(req, res) {
       UTM_CONTENT: utmContent,
       ...(ASSIGNED_BY_ID ? { ASSIGNED_BY_ID: Number(ASSIGNED_BY_ID) } : {}),
       ...(ENTITY === 'deal' && CATEGORY_ID ? { CATEGORY_ID: Number(CATEGORY_ID) } : {}),
-      ...(UF.course && course ? { [UF.course]: course } : {}),
-      ...(UF.branch && branch ? { [UF.branch]: branch } : {})
+      ...(UF.course && courseId ? { [UF.course]: courseId } : {}),
+      ...(UF.branch && branchId ? { [UF.branch]: branchId } : {}),
+      ...(UF.project && UF_PROJECT_VALUE ? { [UF.project]: UF_PROJECT_VALUE } : {})
     };
 
     /* REGISTER_SONET_EVENT posts it to the activity stream so the team is notified. */

@@ -88,9 +88,16 @@
   }
 
   /* ---------- jump to the form, prefilling course / branch ---------- */
+  const setSelect = (field, value) => {
+    if (!value) return;
+    const f = form[field];
+    if ([...f.options].some((o) => o.value === value)) f.value = value;
+  };
+  const labelOf = (field) => form[field].selectedOptions[0]?.text.trim() || '';
+
   const focusForm = (course, branch) => {
-    if (course) { const f = form.course; if ([...f.options].some((o) => o.value === course || o.text === course)) f.value = course; }
-    if (branch) { const f = form.branch; if ([...f.options].some((o) => o.value === branch || o.text === branch)) f.value = branch; }
+    setSelect('course', course);
+    setSelect('branch', branch);
     leadbox.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
     if (!okBox.hidden) return;
     setTimeout(() => { if (!form.name.value) form.name.focus({ preventScroll: true }); }, reduce ? 0 : 600);
@@ -183,8 +190,10 @@
     const payload = {
       name: form.name.value.trim(),
       phone: form.phone.value.trim(),
-      course: form.course.value,
-      branch: form.branch.value,
+      courseId: form.course.value,          // Bitrix enum id
+      branchId: form.branch.value,
+      course: form.course.value ? labelOf('course') : '',
+      branch: form.branch.value ? labelOf('branch') : '',
       website: form.website.value,          // honeypot
       elapsed: Date.now() - openedAt,        // bots submit instantly
       ...attribution
