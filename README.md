@@ -4,6 +4,8 @@ Lead-generation landing page for **Mudarris Arab tili Akademiyasi** (Tashkent), 
 destination for Meta (Facebook/Instagram) ad traffic. The academy teaches Arabic **offline**, in
 person, across 8 branches in Tashkent — the page is written around that.
 
+Form submissions go straight into **amoCRM**.
+
 Content and branding sourced from the academy's public
 [Telegram channel](https://t.me/s/mudarris_akademiyasi) and
 [Instagram profile](https://www.instagram.com/mudarris_akademiyasi/).
@@ -13,16 +15,58 @@ Content and branding sourced from the academy's public
 - `public/index.html` — the page (Uzbek, Latin script)
 - `public/styles.css` — styles; brand blue `#2A5298` taken from the academy logo
 - `public/script.js` — form handling, Meta Pixel, validation, phone mask, UTM capture
-- `api/lead.js` — serverless function; appends each lead to Google Sheets
+- `api/lead.js` — serverless function; creates the contact + lead in amoCRM
+- `scripts/amocrm-inspect.mjs` — prints the amoCRM ids you need for configuration
 - `public/assets/logo.jpg` — academy logo
 
-No build step. Static files plus one serverless function on Vercel.
+No build step and no dependencies. Static files plus one serverless function on Vercel.
 
 ---
 
-## ⚠️ Two things must be set up before running ads
+## ⚠️ Setup required before running ads
 
-### 1. Meta Pixel ID
+### 1. amoCRM
+
+**a. Create a private integration.** In amoCRM: **Settings → Integrations → Create integration →
+Private**. Grant it access to leads and contacts. Open it and copy the **long-lived token**
+(долгосрочный токен).
+
+**b. Find your ids.** Run this locally — the token stays on your machine:
+
+```bash
+AMOCRM_SUBDOMAIN=yoursubdomain AMOCRM_ACCESS_TOKEN=yourtoken node scripts/amocrm-inspect.mjs
+```
+
+It prints your pipelines, stage ids, lead custom fields and users, each labelled with the env var
+it belongs to.
+
+**c. Set the environment variables** in Vercel → the project → **Settings → Environment Variables**:
+
+| Name | Required | Value |
+|---|---|---|
+| `AMOCRM_SUBDOMAIN` | yes | `mudarris` for `mudarris.amocrm.ru`. Pass the full host (`mudarris.kommo.com`) if you are on Kommo. |
+| `AMOCRM_ACCESS_TOKEN` | yes | the long-lived token |
+| `AMOCRM_PIPELINE_ID` | no | which funnel. Defaults to the main one. |
+| `AMOCRM_STATUS_ID` | no | which stage. Defaults to the first. |
+| `AMOCRM_RESPONSIBLE_USER_ID` | no | who the lead is assigned to |
+| `AMOCRM_CF_COURSE` etc. | no | lead custom field ids — see below |
+
+Redeploy after adding them.
+
+### What a lead looks like in amoCRM
+
+- **Lead name:** `Sayt: Nodira — Grammatika`
+- **Contact:** created with the phone in `+998…` form, or reused if that phone already exists —
+  repeat submissions do not create duplicate contacts
+- **Tags:** `Sayt`, the utm_source, the course, the branch
+- **Note:** every field including all UTM params, `fbclid` and referrer
+
+Custom fields are optional on purpose: everything is in the note regardless, so the integration
+works the moment the token is set. Map `AMOCRM_CF_COURSE`, `AMOCRM_CF_BRANCH`,
+`AMOCRM_CF_UTM_SOURCE`, `AMOCRM_CF_UTM_CAMPAIGN` and `AMOCRM_CF_FBCLID` later if you want to
+filter and build reports on those values.
+
+### 2. Meta Pixel ID
 
 Open `public/index.html` and replace the placeholder near the top:
 
@@ -33,8 +77,6 @@ Open `public/index.html` and replace the placeholder near the top:
 Until a real 15–16 digit ID is in place, no tracking fires (the page still works, and a warning
 is logged to the browser console).
 
-Events sent:
-
 | Event | Fires when |
 |---|---|
 | `PageView` | page loads |
@@ -43,46 +85,24 @@ Events sent:
 
 Optimize the campaign for **Lead**.
 
-### 2. Google Sheets credentials
-
-**a.** Create a spreadsheet. Name the first sheet **`Leads`** and put these headers in row 1:
-
-```
-Sana | Ism | Telefon | Kurs | Filial | utm_source | utm_medium | utm_campaign | utm_content | fbclid | Referrer | User-Agent
-```
-
-**b.** In [Google Cloud Console](https://console.cloud.google.com/): create a project → enable the
-**Google Sheets API** → **IAM & Admin → Service Accounts** → create one → **Keys → Add key → JSON**.
-
-**c.** Open the downloaded JSON, copy the `client_email` value, and **share the spreadsheet with
-that email address as Editor**. This step is the one people forget — without it every write is
-denied.
-
-**d.** In Vercel → the project → **Settings → Environment Variables**, add:
-
-| Name | Value |
-|---|---|
-| `GOOGLE_SHEET_ID` | the long id in the sheet URL, between `/d/` and `/edit` |
-| `GOOGLE_CLIENT_EMAIL` | `client_email` from the JSON |
-| `GOOGLE_PRIVATE_KEY` | `private_key` from the JSON, pasted whole, `-----BEGIN` through `-----END PRIVATE KEY-----\n` |
-| `GOOGLE_SHEET_RANGE` | `Leads!A:L` (optional, this is the default) |
-
-Redeploy after adding them.
-
-Until these exist, `/api/lead` returns `500 not_configured` and the form shows its error message.
-Leads are also written to the function logs on any Sheets failure, so a broken spreadsheet never
-silently loses one.
-
 ---
+
+## Reliability
+
+- If amoCRM is unreachable, the lead is written to the Vercel function logs
+  (`LEAD_WRITE_FAILED`) and the visitor is asked to call instead — a failure is never silent.
+- If the lead is created but the note fails, the request still succeeds; the lead is already safe
+  in the CRM.
+- Until the env vars are set, `/api/lead` returns `500 not_configured`.
 
 ## Spam handling
 
-Ad traffic attracts bots. Two filters run before anything is written:
+Ad traffic attracts bots. Two filters run before anything reaches the CRM:
 
 - a hidden honeypot field (`website`) that only a bot fills in
 - a minimum time-on-page of 1.5s before submit
 
-Both return `200 OK` so the bot believes it succeeded and does not retry — but no row is written.
+Both return `200 OK` so the bot believes it succeeded and does not retry — but no lead is created.
 
 ## Local preview
 
