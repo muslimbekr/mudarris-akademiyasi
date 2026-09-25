@@ -2,7 +2,7 @@
 
 Lead-generation landing page for **Mudarris Arab tili Akademiyasi** (Tashkent), built as the
 destination for Meta (Facebook/Instagram) ad traffic. The academy teaches Arabic **offline**, in
-person, across 8 branches in Tashkent — the page is written around that.
+person, across 7 branches in Tashkent — the page is written around that.
 
 Form submissions go straight into **Bitrix24 CRM**.
 
