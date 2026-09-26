@@ -26,7 +26,10 @@
     window.fbq = window.fbq || function () {};
     console.warn('[Mudarris] Meta Pixel ID not set — index.html ichidagi META_PIXEL_ID ni almashtiring.');
   }
-  const track = (event, params) => { try { window.fbq('track', event, params); } catch (_) {} };
+  const track = (event, params, opts) => {
+    try { opts ? window.fbq('track', event, params, opts) : window.fbq('track', event, params); }
+    catch (_) {}
+  };
 
   /* ---------- sticky nav + floating call button ---------- */
   const onScroll = () => {
@@ -164,6 +167,14 @@
   });
 
   /* ---------- ad attribution ---------- */
+  const cookie = (name) => {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  };
+  const newEventId = () => (crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'lead-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10));
+
   const qs = new URLSearchParams(location.search);
   const attribution = {
     utm_source: qs.get('utm_source') || '',
@@ -187,7 +198,13 @@
     }
 
     submitBtn.classList.add('is-busy');
+    /* One id for both copies of this conversion. Meta drops whichever arrives second. */
+    const eventId = newEventId();
     const payload = {
+      eventId,
+      eventSourceUrl: location.href,
+      fbp: cookie('_fbp'),          // Pixel's browser id
+      fbc: cookie('_fbc'),          // Pixel's click id, set from fbclid on landing
       name: form.name.value.trim(),
       phone: form.phone.value.trim(),
       courseId: form.course.value,          // Bitrix enum id
@@ -207,7 +224,10 @@
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
 
-      track('Lead', { content_name: payload.course || 'Aniqlanmagan', content_category: payload.branch || 'Aniqlanmagan' });
+      track('Lead', {
+        content_name: payload.course || 'Aniqlanmagan',
+        content_category: payload.branch || 'Aniqlanmagan'
+      }, { eventID: eventId });
       document.querySelector('.lf__okphone').textContent = payload.phone;
       form.hidden = true;
       okBox.hidden = false;

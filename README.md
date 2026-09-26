@@ -15,7 +15,9 @@ Content and branding sourced from the academy's public
 - `public/index.html` — the page (Uzbek, Latin script)
 - `public/styles.css` — styles; brand blue `#2A5298` taken from the academy logo
 - `public/script.js` — form handling, Meta Pixel, validation, phone mask, UTM capture
-- `api/lead.js` — serverless function; creates the CRM lead in Bitrix24
+- `api/lead.js` — serverless function; creates the CRM lead in Bitrix24, sends the `Lead` CAPI event
+- `api/capi-qualify.js` — cron job; reports booked demos back to Meta
+- `api/_capi.js` — Meta Conversions API client (hashing, dedup, error handling)
 - `scripts/bitrix-inspect.mjs` — checks the webhook and prints the ids you need
 - `public/assets/logo.jpg` — academy logo
 
@@ -83,6 +85,42 @@ Pixel `1038630499223454` is live. The loader lives in `public/script.js`; the id
 
 Optimize the campaign for **Lead**. Note that `Lead` only fires on a successful write to the
 CRM, so it stays silent until `BITRIX_WEBHOOK_URL` is set.
+
+### 3. Meta Conversions API (server-side tracking)
+
+The Pixel alone loses a large share of events to iOS prompts and ad blockers, and it can only
+report that a form was filled in — not whether the person was worth reaching. Two server-side
+events close both gaps.
+
+| Event | Sent by | When | Why |
+|---|---|---|---|
+| `Lead` | `api/lead.js` | on form submit | Server-side copy of the Pixel event, same `event_id`, so Meta keeps one and nothing is lost to the browser |
+| `Schedule` | `api/capi-qualify.js` | when the lead reaches *Demoga yozilgan* | Tells Meta which leads became real demos |
+
+**Why `Schedule` matters more than `Lead`:** 71.5% of Facebook leads in this portal end up
+unqualified. A campaign optimised for `Lead` therefore buys more of what the sales team
+discards. Optimising for `Schedule` points the algorithm at people who actually book.
+
+**Setup**
+
+1. Events Manager → your pixel → **Settings → Conversions API → Generate access token**. Put it
+   in Vercel as `META_CAPI_TOKEN`.
+2. Create one custom field on Leads to record what has been reported, and set its code as
+   `BITRIX_UF_CAPI_QUAL`. Until it exists the cron runs in **dry-run**: it reports what it
+   would send and sends nothing.
+3. Optionally set `CRON_SECRET` so you can trigger a run by hand:
+   `curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/capi-qualify`
+
+`api/capi-qualify.js` runs every two hours via `vercel.json`. It is idempotent — each lead is
+stamped once reported, and `event_id` is `qual-<lead id>`, so a retry cannot double-count.
+
+**It deliberately does not touch `UF_CRM_CAPI_SENT`.** A separate integration already owns that
+field and reports Meta lead-form leads; writing to it would corrupt that system's bookkeeping.
+This job only handles leads whose source matches `BITRIX_SOURCE_ID` (the landing page), so the
+two never overlap.
+
+**Privacy:** phone and name are SHA-256 hashed before they leave the server, per Meta's spec.
+No raw personal data is sent.
 
 ---
 

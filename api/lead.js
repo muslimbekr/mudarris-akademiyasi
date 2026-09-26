@@ -28,6 +28,8 @@ const UF_PROJECT_VALUE = (process.env.BITRIX_UF_PROJECT_VALUE || '').trim();
 const COURSE_IDS = new Set(['285', '287', '289', '291', '293', '295', '613']);
 const BRANCH_IDS = new Set(['165', '167', '169', '171', '173', '837', '849', '1475', '1477']);
 
+import { sendCapiEvent, buildFbc, clientIpOf, capiConfigured } from './_capi.js';
+
 const CONTROL_CHARS = /[\p{Cc}]/gu;
 const clean = (v, max = 200) => String(v ?? '').replace(CONTROL_CHARS, '').trim().slice(0, max);
 
@@ -97,6 +99,10 @@ export default async function handler(req, res) {
   const utmContent = clean(body.utm_content, 120);
   const fbclid = clean(body.fbclid, 255);
   const referrer = clean(body.referrer, 255);
+  const eventId = clean(body.eventId, 80);
+  const fbp = clean(body.fbp, 120);
+  const fbc = buildFbc(clean(body.fbc, 255), fbclid);
+  const eventSourceUrl = clean(body.eventSourceUrl, 400);
   const e164 = `+${digits}`;
 
   if (!WEBHOOK) {
@@ -118,6 +124,9 @@ export default async function handler(req, res) {
       `Kurs: ${course || '—'}`,
       `Filial: ${branch || '—'}`,
       `fbclid: ${fbclid || '—'}`,
+      `fbc: ${fbc || '—'}`,
+      `fbp: ${fbp || '—'}`,
+      `event_id: ${eventId || '—'}`,
       `Referrer: ${referrer || '—'}`,
       `Vaqt: ${new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}`,
       duplicateOf ? `\n⚠️ Bu raqam bazada bor: ${duplicateOf.join(', ')}` : ''
@@ -145,6 +154,28 @@ export default async function handler(req, res) {
 
     /* REGISTER_SONET_EVENT posts it to the activity stream so the team is notified. */
     const id = await bx(`crm.${ENTITY}.add`, { fields, params: { REGISTER_SONET_EVENT: 'Y' } });
+
+    /* Server-side copy of the Pixel's Lead event, sharing its event_id so Meta keeps one.
+       Awaited but never fatal: the lead is already in the CRM either way. */
+    if (capiConfigured()) {
+      const capi = await sendCapiEvent({
+        eventName: 'Lead',
+        eventId,
+        eventSourceUrl,
+        phone: e164,
+        firstName: name,
+        fbc,
+        fbp,
+        clientIp: clientIpOf(req),
+        clientUserAgent: req.headers['user-agent'],
+        customData: {
+          content_name: course || 'Aniqlanmagan',
+          content_category: branch || 'Aniqlanmagan',
+          lead_id: String(id)
+        }
+      });
+      if (!capi.ok && !capi.skipped) console.error('CAPI_LEAD_NOT_SENT', id, eventId);
+    }
 
     return res.status(200).json({ ok: true, id });
   } catch (err) {

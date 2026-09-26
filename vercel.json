@@ -2,6 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": "public",
   "cleanUrls": true,
+  "crons": [
+    { "path": "/api/capi-qualify", "schedule": "0 */2 * * *" }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
